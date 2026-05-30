@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
+import * as buyerController from '../controllers/buyer'
 
 const saveDetailsSchema = z.object({
     minPrice: z.number().positive(),
@@ -19,23 +20,7 @@ buyerRoute.get('/', (c) => {
 })
 
 buyerRoute.post('/save_details', zValidator('json', saveDetailsSchema), async(c) => {
-    let body;
-
-    try {
-        body = await c.req.json()
-    } catch (error) {
-        return c.json({ error: 'Invalid JSON' }, 400)
-    }
-
-    const csv = [
-        'minPrice,maxPrice,beds,baths',
-        `${body.minPrice},${body.maxPrice},${body.beds},${body.baths}`,
-    ].join('\n') + '\n'
-    
-    return c.body(csv, 200, {
-        'Content-Type': 'text/csv',
-        'Content-Disposition': 'attachment; filename="buyer-details.csv"',
-    })
+    return buyerController.saveDetails(c)
 })
 
 
